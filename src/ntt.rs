@@ -1,3 +1,5 @@
+mod reduce;
+
 const BITREV_TABLE_512: [u16; 512] = 
 [
       0,256,128,384, 64,320,192,448, 32,288,160,416, 96,352,224,480, 16,272,144,
@@ -104,6 +106,7 @@ const BITREV_TABLE_1024: [u16; 1024] =
 
 fn bitrev_vector(poly: &mut Box<[u16]>, bitrev_table: &[u16])
 {
+    assert!(poly.len() == bitrev_table.len());
 
     for i in 0..bitrev_table.len()
     {

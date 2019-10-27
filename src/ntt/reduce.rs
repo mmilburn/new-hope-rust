@@ -1,4 +1,3 @@
-
 const QINV: u32 = 12287; // -inverse_mod(p,2^18)
 const RLOG: u32 = 18;
 //const RINV: u32 = 576;
@@ -75,7 +74,7 @@ mod tests
     expected.push((65816, 10740));
     expected.push((77096, 7139));
     
-    for tuple in &expected
+    for tuple in expected
     {
         assert_eq!(montgomery_reduce(tuple.0), tuple.1);
     }

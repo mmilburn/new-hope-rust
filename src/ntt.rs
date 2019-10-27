@@ -29,7 +29,7 @@ const BITREV_TABLE_512: [u16; 512] =
     239,495, 31,287,159,415, 95,351,223,479, 63,319,191,447,127,383,255,511
 ];
 
-const BITREV_TABLE_1024: [u16; 1024] = 
+const BITREV_TABLE_1024: [u16; 1024] =
 [
         0, 512, 256, 768, 128, 640, 384, 896,  64, 576, 320, 832, 192, 704, 448,
       960,  32, 544, 288, 800, 160, 672, 416, 928,  96, 608, 352, 864, 224, 736,
@@ -101,6 +101,24 @@ const BITREV_TABLE_1024: [u16; 1024] =
       735, 479, 991,  63, 575, 319, 831, 191, 703, 447, 959, 127, 639, 383, 895,
       255, 767, 511,1023
 ];
+
+fn bitrev_vector(poly: &mut Box<[u16]>, bitrev_table: &[u16])
+{
+
+    for i in 0..bitrev_table.len()
+    {
+        let tmp: u16;
+        let r_index = bitrev_table[i] as usize;
+        if i < r_index
+        {
+            //Could be done with XOR instead of tmp.
+            tmp = poly[i];
+            poly[i] = poly[r_index];
+            poly[r_index] = tmp;
+        }
+    }
+}
+
 #[cfg(test)]
 mod tests
 {
@@ -142,10 +160,28 @@ mod tests
         }
     }
 
+    //Did I fat-finger the hardcoded tables?
+    //More importantly, do I understand how they were generated?
     #[test]
     fn bitrev_tables_not_broken()
     {
         assert_bitrev_table(&BITREV_TABLE_512, 9);
         assert_bitrev_table(&BITREV_TABLE_1024, 10);
+    }
+    
+    //Reverse a well known, previously reversed vector.
+    //Elements should come out in index order.
+    #[test]
+    fn test_bitrev_vector()
+    {
+        let mut vec: Box<[u16]> = Box::new(BITREV_TABLE_512);
+        bitrev_vector(&mut vec, &BITREV_TABLE_512);
+        for i in 0..vec.len()
+        {
+            let usized = vec[i] as usize;
+            assert_eq!(usized == i, true, 
+                       "expected vec[{}] = {} found vec[{}] = {}", i, i, i, 
+                       usized);
+        }
     }
 }

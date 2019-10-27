@@ -122,6 +122,17 @@ fn bitrev_vector(poly: &mut Box<[u16]>, bitrev_table: &[u16])
     }
 }
 
+fn mul_coefficients(poly: &mut Box<[u16]>, factors: &[u16])
+{
+    assert!(poly.len() == factors.len());
+
+    for i in 0..poly.len()
+    {
+        poly[i] = reduce::montgomery_reduce(u32::from(poly[i]) * 
+                                            u32::from(factors[i]));
+    }
+}
+
 #[cfg(test)]
 mod tests
 {
@@ -185,6 +196,39 @@ mod tests
             assert_eq!(usized == i, true, 
                        "expected vec[{}] = {} found vec[{}] = {}", i, i, i, 
                        usized);
+        }
+    }
+
+    #[test]
+    fn test_mul_coefficients()
+    {
+        //answer (a) = poly (p) x factor (f)
+        //montgomery result (m) = montgomery_reduce(a)
+        //tuples of format:
+        //(     a,    p,    f,   m)
+        //(794701,  653, 1217,7104)
+        //(252333,  477,  529,1805)
+        //(560007,  189, 2963,2360)
+        //(752640,  420, 1792,1587)
+        //(421954,16229,   26,5951)
+        //(504029,  229, 2201,5368)
+        //(107917,  311,  347,2430)
+        //(212463,    9,23607,4826)
+
+        let mut poly: Box<[u16]> = Box::new(
+            [653, 477, 189, 420, 16229, 229, 311, 9]
+            );
+        let factors: [u16; 8] = [1217, 529, 2963, 1792, 26, 2201, 347, 23607];
+        let monty: [u16; 8] = [7104, 1805, 2360, 1587, 5951, 5368, 2430, 4826];
+        
+        mul_coefficients(&mut poly, &factors);
+
+        for i in 0..poly.len()
+        {
+            let p = poly[i];
+            let m = monty[i];
+            assert_eq!(p == m, true, 
+                       "new poly {} didn't match expected monty {}", p, m);
         }
     }
 }

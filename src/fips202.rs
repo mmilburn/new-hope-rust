@@ -1,4 +1,5 @@
 static NROUNDS: usize = 24;
+static SHAKE128_RATE: usize = 168;
 
 /* Keccak round constants */
 static KeccakF_RoundConstants: [u64; 24] = 
@@ -65,7 +66,7 @@ fn store64(u: u64) -> Vec<u8>
 }
 
 
-fn KeccakF1600_StatePermute(mut state: [u64; 24])
+fn KeccakF1600_StatePermute(state: &mut [u64; 25])
 {
     
     let (mut Aba, mut Abe, mut Abi, mut Abo, mut Abu): 
@@ -343,23 +344,38 @@ fn KeccakF1600_StatePermute(mut state: [u64; 24])
 
 }
 
-fn keccak_absorb(mut state: [u64; 24], rate: usize, m: Vec<u8>, p: u8)
+fn keccak_absorb(state: &mut [u64; 25], rate: usize, m: Vec<u8>, p: u8)
 {
-    assert!((rate / 8) < state.len());
-    for i in 0..state.len()
-    {
-        state[i] = 0;
-    }
+    let rate_qwords = rate / 8;
 
-    while m.len() >= rate
+    assert!(rate_qwords < state.len());
+    
+    let mut t: Vec<u8> = vec![0u8; rate];
+    let mut rate_offset = 0;
+    //state = [0u64; 25];
+
+    while m.len() >= rate_offset
     {
-        let mut i = 0;
-        while i < rate / 8
+        for i in 0..rate_qwords
         {
-            //state[i] ^= load64(m, 8 * i);
+            state[i] ^= load64(&m, rate_offset + 8 * i);
         }
 
         KeccakF1600_StatePermute(state);
+        rate_offset += rate;
+    }
+
+    for i in 0..m.len()
+    {
+        t[i] = m[i];
+    }
+
+    t[m.len()] = p;
+    t[rate - 1] |= 128;
+
+    for i in 0..rate_qwords
+    {
+        state[i] ^= load64(&t, 8 * i);
     }
 }
 
@@ -381,6 +397,51 @@ mod tests
         for i in 0..y.len()
         {
             assert_eq!(x[i] == y[i], true, "x[{}] = {} y[{}] = {}", i, x[i], i, y[i]);
+        }
+    }
+
+    #[test]
+    //https://github.com/XKCP/XKCP/blob/master/tests/TestVectors/KeccakF-1600-IntermediateValues.txt
+    fn test_keccakf1600_on_zeros()
+    {
+        let mut s: [u64; 25] = [0; 25];
+        //I pulled these values in as big endian...
+        let final_state: Vec<u64> = vec![
+            0xE7DDE140798F25F1,
+            0x8A47C033F9CCD584,
+            0xEEA95AA61E2698D5,
+            0x4D49806F304715BD,
+            0x57D05362054E288B,
+            0xD46F8E7F2DA497FF,
+            0xC44746A4A0E5FE90,
+            0x762E19D60CDA5B8C,
+            0x9C05191BF7A630AD,
+            0x64FC8FD0B75A9330,
+            0x35D617233FA95AEB,
+            0x0321710D26E6A6A9,
+            0x5F55CFDB167CA581,
+            0x26C84703CD31B843,
+            0x9F56A5111A2FF201,
+            0x61AED9215A63E505,
+            0xF270C98CF2FEBE64,
+            0x1166C47B95703661,
+            0xCB0ED04F555A7CB8,
+            0xC832CF1C8AE83E8C,
+            0x14263AAE22790C94,
+            0xE409C5A224F94118,
+            0xC26504E72635F516,
+            0x3BA1307FE944F675,
+            0x49A2EC5C7BFFF1EA,
+        ];
+
+        KeccakF1600_StatePermute(&mut s);
+
+        for i in 0..s.len()
+        {
+            let f = s[i];
+            let e = u64::from_be(final_state[i]);
+            assert_eq!(f == e, true, 
+                       "s[{}] = 0x{:X?} final_state[{}] = 0x{:X?}", i, f, i, e);
         }
     }
 }

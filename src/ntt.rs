@@ -133,6 +133,53 @@ fn mul_coefficients(poly: &mut Box<[u16]>, factors: &[u16])
     }
 }
 
+//FIXME (mmilburn): I don't know how to test this yet.
+fn ntt(a: &mut Box<[u16]>, omega: &[u16], size: usize, q: u16)
+{
+    //I'm looking for the log2 of size. I'm expected size to be either 512 or 
+    //1024. Subtracting 1 will give me log2. Subtracting 2 will give me the  
+    //number of loops needed for our fft (ntt).
+    let num_bits = size.leading_zeros().wrapping_sub(2);
+    let size32: u32 = size as u32;
+    let mut distance;
+
+    for i in (0..num_bits).step_by(2)
+    {
+        distance = 1_usize.wrapping_shl(i);
+        ntt_wing(a, omega, size, distance, q, false);
+
+        if i + 1 < size32
+        {
+            distance <<= 1;
+            ntt_wing(a, omega, size, distance, q, true);
+        }
+    }
+    
+
+}
+
+fn ntt_wing(a: &mut Box<[u16]>, omega: &[u16], size: usize, distance: usize, 
+            q: u16, odd: bool)
+{
+    for start in 0..distance
+        {
+            let mut j_twiddle = 0;
+
+            for j in (start..size - 1).step_by(2 * distance)
+            {
+                j_twiddle += 1;
+                let w = omega[j_twiddle];
+                let temp = a[j];
+                a[j] = temp + a[j + distance];
+                if odd { a[j] = a[j] % q }
+                let r_input: u32 = u32::from(w * temp + 3 * q - 
+                                             a[j + distance]);
+                a[j + distance] = reduce::montgomery_reduce(r_input);
+
+            }
+        }
+}
+
 #[cfg(test)]
 mod tests
 {

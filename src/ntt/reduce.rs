@@ -1,7 +1,7 @@
 const QINV: u32 = 12287; // -inverse_mod(p,2^18)
 const RLOG: u32 = 18;
 //const RINV: u32 = 576;
-const NEWHOPE_Q: u32 = 12289;
+pub static NEWHOPE_Q: u16 = 12289;
 /*
  *"for example, for the input 2^32−q(R−1) = 1073491969 the addition
  a = a + u causes an overflow and the function returns 0 instead
@@ -19,8 +19,8 @@ pub fn montgomery_reduce(mut a: u32) -> u16
     assert!(a < 855662592);
   }
   let mut u: u32 = a.wrapping_mul(QINV);
-  u &= (1 << RLOG) - 1;
-  u *= NEWHOPE_Q;
+  u &= 1_u32.wrapping_shl(RLOG) - 1;
+  u = u.wrapping_mul(u32::from(NEWHOPE_Q));
   a = a.wrapping_add(u);
   //This was represented as a >> 18 in the reference implemetation. Is it
   //merely coincidental that RLOG is 18 as well? Probably not the original

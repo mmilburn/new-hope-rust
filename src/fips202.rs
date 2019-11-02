@@ -399,8 +399,9 @@ fn keccak_squeezeblocks(num_blocks: usize, state: &Vec<u64>, rate: usize) ->
     let rate_qwords = rate >> 3;
     let mut bytes: Vec<u8> = Vec::new();
     let mut new_state: Vec<u64> = state.clone();
+    let blocks: usize = if num_blocks < 1 { 1 } else { num_blocks };
     
-    for _ in 0..num_blocks
+    for _ in 0..blocks
     {
         new_state = KeccakF1600_StatePermute(&new_state);
         for i in 0..rate_qwords

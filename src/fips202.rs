@@ -3,7 +3,7 @@ const SHAKE128_RATE: usize = 168;
 const SHAKE256_RATE: usize = 136;
 
 /* Keccak round constants */
-static KeccakF_RoundConstants: [u64; 24] = 
+static KECCAK_F_ROUND_CONSTANTS: [u64; 24] = 
 [
     0x0000000000000001,
     0x0000000000008082,
@@ -71,282 +71,282 @@ fn store64(u: u64) -> Vec<u8>
 }
 
 
-fn KeccakF1600_StatePermute(state: &Vec<u64>) -> Vec<u64>
+fn keccak_f1600_state_permute(state: &Vec<u64>) -> Vec<u64>
 {
     
-    let (mut Aba, mut Abe, mut Abi, mut Abo, mut Abu): 
+    let (mut ab_a, mut ab_e, mut ab_i, mut ab_o, mut ab_u): 
         (u64, u64, u64, u64, u64);
-    let (mut Aga, mut Age, mut Agi, mut Ago, mut Agu): 
+    let (mut ag_a, mut ag_e, mut ag_i, mut ag_o, mut ag_u): 
         (u64, u64, u64, u64, u64);
-    let (mut Aka, mut Ake, mut Aki, mut Ako, mut Aku): 
+    let (mut ak_a, mut ak_e, mut ak_i, mut ak_o, mut ak_u): 
         (u64, u64, u64, u64, u64);  
-    let (mut Ama, mut Ame, mut Ami, mut Amo, mut Amu): 
+    let (mut am_a, mut am_e, mut am_i, mut am_o, mut am_u): 
         (u64, u64, u64, u64, u64);
-    let (mut Asa, mut Ase, mut Asi, mut Aso, mut Asu): 
+    let (mut as_a, mut as_e, mut as_i, mut as_o, mut as_u): 
         (u64, u64, u64, u64, u64);
-    let (mut BCa, mut BCe, mut BCi, mut BCo, mut BCu): 
+    let (mut bc_a, mut bc_e, mut bc_i, mut bc_o, mut bc_u): 
         (u64, u64, u64, u64, u64);
-    let (mut Da, mut De, mut Di, mut Do, mut Du):      
+    let (mut d_a, mut d_e, mut d_i, mut d_o, mut d_u):      
         (u64, u64, u64, u64, u64);
-    let (mut Eba, mut Ebe, mut Ebi, mut Ebo, mut Ebu): 
+    let (mut eb_a, mut eb_e, mut eb_i, mut eb_o, mut eb_u): 
         (u64, u64, u64, u64, u64);
-    let (mut Ega, mut Ege, mut Egi, mut Ego, mut Egu): 
+    let (mut eg_a, mut eg_e, mut eg_i, mut eg_o, mut eg_u): 
         (u64, u64, u64, u64, u64);
-    let (mut Eka, mut Eke, mut Eki, mut Eko, mut Eku): 
+    let (mut ek_a, mut ek_e, mut ek_i, mut ek_o, mut ek_u): 
         (u64, u64, u64, u64, u64);
-    let (mut Ema, mut Eme, mut Emi, mut Emo, mut Emu): 
+    let (mut em_a, mut em_e, mut em_i, mut em_o, mut em_u): 
         (u64, u64, u64, u64, u64);
-    let (mut Esa, mut Ese, mut Esi, mut Eso, mut Esu): 
+    let (mut es_a, mut es_e, mut es_i, mut es_o, mut es_u): 
         (u64, u64, u64, u64, u64);
 
 
         //copyFromState(A, state)
-        Aba = state[ 0];
-        Abe = state[ 1];
-        Abi = state[ 2];
-        Abo = state[ 3];
-        Abu = state[ 4];
-        Aga = state[ 5];
-        Age = state[ 6];
-        Agi = state[ 7];
-        Ago = state[ 8];
-        Agu = state[ 9];
-        Aka = state[10];
-        Ake = state[11];
-        Aki = state[12];
-        Ako = state[13];
-        Aku = state[14];
-        Ama = state[15];
-        Ame = state[16];
-        Ami = state[17];
-        Amo = state[18];
-        Amu = state[19];
-        Asa = state[20];
-        Ase = state[21];
-        Asi = state[22];
-        Aso = state[23];
-        Asu = state[24];
+        ab_a = state[ 0];
+        ab_e = state[ 1];
+        ab_i = state[ 2];
+        ab_o = state[ 3];
+        ab_u = state[ 4];
+        ag_a = state[ 5];
+        ag_e = state[ 6];
+        ag_i = state[ 7];
+        ag_o = state[ 8];
+        ag_u = state[ 9];
+        ak_a = state[10];
+        ak_e = state[11];
+        ak_i = state[12];
+        ak_o = state[13];
+        ak_u = state[14];
+        am_a = state[15];
+        am_e = state[16];
+        am_i = state[17];
+        am_o = state[18];
+        am_u = state[19];
+        as_a = state[20];
+        as_e = state[21];
+        as_i = state[22];
+        as_o = state[23];
+        as_u = state[24];
 
         for round in (0..NROUNDS).step_by(2)
         {
             //    prepareTheta
-            BCa = Aba^Aga^Aka^Ama^Asa;
-            BCe = Abe^Age^Ake^Ame^Ase;
-            BCi = Abi^Agi^Aki^Ami^Asi;
-            BCo = Abo^Ago^Ako^Amo^Aso;
-            BCu = Abu^Agu^Aku^Amu^Asu;
+            bc_a = ab_a^ag_a^ak_a^am_a^as_a;
+            bc_e = ab_e^ag_e^ak_e^am_e^as_e;
+            bc_i = ab_i^ag_i^ak_i^am_i^as_i;
+            bc_o = ab_o^ag_o^ak_o^am_o^as_o;
+            bc_u = ab_u^ag_u^ak_u^am_u^as_u;
 
             //thetaRhoPiChiIotaPrepareTheta(round  , A, E)
-            Da = BCu^ROL!(BCe, 1);
-            De = BCa^ROL!(BCi, 1);
-            Di = BCe^ROL!(BCo, 1);
-            Do = BCi^ROL!(BCu, 1);
-            Du = BCo^ROL!(BCa, 1);
+            d_a = bc_u^ROL!(bc_e, 1);
+            d_e = bc_a^ROL!(bc_i, 1);
+            d_i = bc_e^ROL!(bc_o, 1);
+            d_o = bc_i^ROL!(bc_u, 1);
+            d_u = bc_o^ROL!(bc_a, 1);
 
-            Aba ^= Da;
-            BCa = Aba;
-            Age ^= De;
-            BCe = ROL!(Age, 44);
-            Aki ^= Di;
-            BCi = ROL!(Aki, 43);
-            Amo ^= Do;
-            BCo = ROL!(Amo, 21);
-            Asu ^= Du;
-            BCu = ROL!(Asu, 14);
-            Eba =   BCa ^((!BCe)&  BCi );
-            Eba ^= KeccakF_RoundConstants[round];
-            Ebe =   BCe ^((!BCi)&  BCo );
-            Ebi =   BCi ^((!BCo)&  BCu );
-            Ebo =   BCo ^((!BCu)&  BCa );
-            Ebu =   BCu ^((!BCa)&  BCe );
+            ab_a ^= d_a;
+            bc_a = ab_a;
+            ag_e ^= d_e;
+            bc_e = ROL!(ag_e, 44);
+            ak_i ^= d_i;
+            bc_i = ROL!(ak_i, 43);
+            am_o ^= d_o;
+            bc_o = ROL!(am_o, 21);
+            as_u ^= d_u;
+            bc_u = ROL!(as_u, 14);
+            eb_a =   bc_a ^((!bc_e)&  bc_i );
+            eb_a ^= KECCAK_F_ROUND_CONSTANTS[round];
+            eb_e =   bc_e ^((!bc_i)&  bc_o );
+            eb_i =   bc_i ^((!bc_o)&  bc_u );
+            eb_o =   bc_o ^((!bc_u)&  bc_a );
+            eb_u =   bc_u ^((!bc_a)&  bc_e );
 
-            Abo ^= Do;
-            BCa = ROL!(Abo, 28);
-            Agu ^= Du;
-            BCe = ROL!(Agu, 20);
-            Aka ^= Da;
-            BCi = ROL!(Aka,  3);
-            Ame ^= De;
-            BCo = ROL!(Ame, 45);
-            Asi ^= Di;
-            BCu = ROL!(Asi, 61);
-            Ega =   BCa ^((!BCe)&  BCi );
-            Ege =   BCe ^((!BCi)&  BCo );
-            Egi =   BCi ^((!BCo)&  BCu );
-            Ego =   BCo ^((!BCu)&  BCa );
-            Egu =   BCu ^((!BCa)&  BCe );
+            ab_o ^= d_o;
+            bc_a = ROL!(ab_o, 28);
+            ag_u ^= d_u;
+            bc_e = ROL!(ag_u, 20);
+            ak_a ^= d_a;
+            bc_i = ROL!(ak_a,  3);
+            am_e ^= d_e;
+            bc_o = ROL!(am_e, 45);
+            as_i ^= d_i;
+            bc_u = ROL!(as_i, 61);
+            eg_a =   bc_a ^((!bc_e)&  bc_i );
+            eg_e =   bc_e ^((!bc_i)&  bc_o );
+            eg_i =   bc_i ^((!bc_o)&  bc_u );
+            eg_o =   bc_o ^((!bc_u)&  bc_a );
+            eg_u =   bc_u ^((!bc_a)&  bc_e );
 
-            Abe ^= De;
-            BCa = ROL!(Abe,  1);
-            Agi ^= Di;
-            BCe = ROL!(Agi,  6);
-            Ako ^= Do;
-            BCi = ROL!(Ako, 25);
-            Amu ^= Du;
-            BCo = ROL!(Amu,  8);
-            Asa ^= Da;
-            BCu = ROL!(Asa, 18);
-            Eka =   BCa ^((!BCe)&  BCi );
-            Eke =   BCe ^((!BCi)&  BCo );
-            Eki =   BCi ^((!BCo)&  BCu );
-            Eko =   BCo ^((!BCu)&  BCa );
-            Eku =   BCu ^((!BCa)&  BCe );
+            ab_e ^= d_e;
+            bc_a = ROL!(ab_e,  1);
+            ag_i ^= d_i;
+            bc_e = ROL!(ag_i,  6);
+            ak_o ^= d_o;
+            bc_i = ROL!(ak_o, 25);
+            am_u ^= d_u;
+            bc_o = ROL!(am_u,  8);
+            as_a ^= d_a;
+            bc_u = ROL!(as_a, 18);
+            ek_a =   bc_a ^((!bc_e)&  bc_i );
+            ek_e =   bc_e ^((!bc_i)&  bc_o );
+            ek_i =   bc_i ^((!bc_o)&  bc_u );
+            ek_o =   bc_o ^((!bc_u)&  bc_a );
+            ek_u =   bc_u ^((!bc_a)&  bc_e );
 
-            Abu ^= Du;
-            BCa = ROL!(Abu, 27);
-            Aga ^= Da;
-            BCe = ROL!(Aga, 36);
-            Ake ^= De;
-            BCi = ROL!(Ake, 10);
-            Ami ^= Di;
-            BCo = ROL!(Ami, 15);
-            Aso ^= Do;
-            BCu = ROL!(Aso, 56);
-            Ema =   BCa ^((!BCe)&  BCi );
-            Eme =   BCe ^((!BCi)&  BCo );
-            Emi =   BCi ^((!BCo)&  BCu );
-            Emo =   BCo ^((!BCu)&  BCa );
-            Emu =   BCu ^((!BCa)&  BCe );
+            ab_u ^= d_u;
+            bc_a = ROL!(ab_u, 27);
+            ag_a ^= d_a;
+            bc_e = ROL!(ag_a, 36);
+            ak_e ^= d_e;
+            bc_i = ROL!(ak_e, 10);
+            am_i ^= d_i;
+            bc_o = ROL!(am_i, 15);
+            as_o ^= d_o;
+            bc_u = ROL!(as_o, 56);
+            em_a =   bc_a ^((!bc_e)&  bc_i );
+            em_e =   bc_e ^((!bc_i)&  bc_o );
+            em_i =   bc_i ^((!bc_o)&  bc_u );
+            em_o =   bc_o ^((!bc_u)&  bc_a );
+            em_u =   bc_u ^((!bc_a)&  bc_e );
 
-            Abi ^= Di;
-            BCa = ROL!(Abi, 62);
-            Ago ^= Do;
-            BCe = ROL!(Ago, 55);
-            Aku ^= Du;
-            BCi = ROL!(Aku, 39);
-            Ama ^= Da;
-            BCo = ROL!(Ama, 41);
-            Ase ^= De;
-            BCu = ROL!(Ase,  2);
-            Esa =   BCa ^((!BCe)&  BCi );
-            Ese =   BCe ^((!BCi)&  BCo );
-            Esi =   BCi ^((!BCo)&  BCu );
-            Eso =   BCo ^((!BCu)&  BCa );
-            Esu =   BCu ^((!BCa)&  BCe );
+            ab_i ^= d_i;
+            bc_a = ROL!(ab_i, 62);
+            ag_o ^= d_o;
+            bc_e = ROL!(ag_o, 55);
+            ak_u ^= d_u;
+            bc_i = ROL!(ak_u, 39);
+            am_a ^= d_a;
+            bc_o = ROL!(am_a, 41);
+            as_e ^= d_e;
+            bc_u = ROL!(as_e,  2);
+            es_a =   bc_a ^((!bc_e)&  bc_i );
+            es_e =   bc_e ^((!bc_i)&  bc_o );
+            es_i =   bc_i ^((!bc_o)&  bc_u );
+            es_o =   bc_o ^((!bc_u)&  bc_a );
+            es_u =   bc_u ^((!bc_a)&  bc_e );
 
             //    prepareTheta
-            BCa = Eba^Ega^Eka^Ema^Esa;
-            BCe = Ebe^Ege^Eke^Eme^Ese;
-            BCi = Ebi^Egi^Eki^Emi^Esi;
-            BCo = Ebo^Ego^Eko^Emo^Eso;
-            BCu = Ebu^Egu^Eku^Emu^Esu;
+            bc_a = eb_a^eg_a^ek_a^em_a^es_a;
+            bc_e = eb_e^eg_e^ek_e^em_e^es_e;
+            bc_i = eb_i^eg_i^ek_i^em_i^es_i;
+            bc_o = eb_o^eg_o^ek_o^em_o^es_o;
+            bc_u = eb_u^eg_u^ek_u^em_u^es_u;
 
             //thetaRhoPiChiIotaPrepareTheta(round+1, E, A)
-            Da = BCu^ROL!(BCe, 1);
-            De = BCa^ROL!(BCi, 1);
-            Di = BCe^ROL!(BCo, 1);
-            Do = BCi^ROL!(BCu, 1);
-            Du = BCo^ROL!(BCa, 1);
+            d_a = bc_u^ROL!(bc_e, 1);
+            d_e = bc_a^ROL!(bc_i, 1);
+            d_i = bc_e^ROL!(bc_o, 1);
+            d_o = bc_i^ROL!(bc_u, 1);
+            d_u = bc_o^ROL!(bc_a, 1);
 
-            Eba ^= Da;
-            BCa = Eba;
-            Ege ^= De;
-            BCe = ROL!(Ege, 44);
-            Eki ^= Di;
-            BCi = ROL!(Eki, 43);
-            Emo ^= Do;
-            BCo = ROL!(Emo, 21);
-            Esu ^= Du;
-            BCu = ROL!(Esu, 14);
-            Aba =   BCa ^((!BCe)&  BCi );
-            Aba ^= KeccakF_RoundConstants[round+1];
-            Abe =   BCe ^((!BCi)&  BCo );
-            Abi =   BCi ^((!BCo)&  BCu );
-            Abo =   BCo ^((!BCu)&  BCa );
-            Abu =   BCu ^((!BCa)&  BCe );
+            eb_a ^= d_a;
+            bc_a = eb_a;
+            eg_e ^= d_e;
+            bc_e = ROL!(eg_e, 44);
+            ek_i ^= d_i;
+            bc_i = ROL!(ek_i, 43);
+            em_o ^= d_o;
+            bc_o = ROL!(em_o, 21);
+            es_u ^= d_u;
+            bc_u = ROL!(es_u, 14);
+            ab_a =   bc_a ^((!bc_e)&  bc_i );
+            ab_a ^= KECCAK_F_ROUND_CONSTANTS[round+1];
+            ab_e =   bc_e ^((!bc_i)&  bc_o );
+            ab_i =   bc_i ^((!bc_o)&  bc_u );
+            ab_o =   bc_o ^((!bc_u)&  bc_a );
+            ab_u =   bc_u ^((!bc_a)&  bc_e );
 
-            Ebo ^= Do;
-            BCa = ROL!(Ebo, 28);
-            Egu ^= Du;
-            BCe = ROL!(Egu, 20);
-            Eka ^= Da;
-            BCi = ROL!(Eka, 3);
-            Eme ^= De;
-            BCo = ROL!(Eme, 45);
-            Esi ^= Di;
-            BCu = ROL!(Esi, 61);
-            Aga =   BCa ^((!BCe)&  BCi );
-            Age =   BCe ^((!BCi)&  BCo );
-            Agi =   BCi ^((!BCo)&  BCu );
-            Ago =   BCo ^((!BCu)&  BCa );
-            Agu =   BCu ^((!BCa)&  BCe );
+            eb_o ^= d_o;
+            bc_a = ROL!(eb_o, 28);
+            eg_u ^= d_u;
+            bc_e = ROL!(eg_u, 20);
+            ek_a ^= d_a;
+            bc_i = ROL!(ek_a, 3);
+            em_e ^= d_e;
+            bc_o = ROL!(em_e, 45);
+            es_i ^= d_i;
+            bc_u = ROL!(es_i, 61);
+            ag_a =   bc_a ^((!bc_e)&  bc_i );
+            ag_e =   bc_e ^((!bc_i)&  bc_o );
+            ag_i =   bc_i ^((!bc_o)&  bc_u );
+            ag_o =   bc_o ^((!bc_u)&  bc_a );
+            ag_u =   bc_u ^((!bc_a)&  bc_e );
 
-            Ebe ^= De;
-            BCa = ROL!(Ebe, 1);
-            Egi ^= Di;
-            BCe = ROL!(Egi, 6);
-            Eko ^= Do;
-            BCi = ROL!(Eko, 25);
-            Emu ^= Du;
-            BCo = ROL!(Emu, 8);
-            Esa ^= Da;
-            BCu = ROL!(Esa, 18);
-            Aka =   BCa ^((!BCe)&  BCi );
-            Ake =   BCe ^((!BCi)&  BCo );
-            Aki =   BCi ^((!BCo)&  BCu );
-            Ako =   BCo ^((!BCu)&  BCa );
-            Aku =   BCu ^((!BCa)&  BCe );
+            eb_e ^= d_e;
+            bc_a = ROL!(eb_e, 1);
+            eg_i ^= d_i;
+            bc_e = ROL!(eg_i, 6);
+            ek_o ^= d_o;
+            bc_i = ROL!(ek_o, 25);
+            em_u ^= d_u;
+            bc_o = ROL!(em_u, 8);
+            es_a ^= d_a;
+            bc_u = ROL!(es_a, 18);
+            ak_a =   bc_a ^((!bc_e)&  bc_i );
+            ak_e =   bc_e ^((!bc_i)&  bc_o );
+            ak_i =   bc_i ^((!bc_o)&  bc_u );
+            ak_o =   bc_o ^((!bc_u)&  bc_a );
+            ak_u =   bc_u ^((!bc_a)&  bc_e );
 
-            Ebu ^= Du;
-            BCa = ROL!(Ebu, 27);
-            Ega ^= Da;
-            BCe = ROL!(Ega, 36);
-            Eke ^= De;
-            BCi = ROL!(Eke, 10);
-            Emi ^= Di;
-            BCo = ROL!(Emi, 15);
-            Eso ^= Do;
-            BCu = ROL!(Eso, 56);
-            Ama =   BCa ^((!BCe)&  BCi );
-            Ame =   BCe ^((!BCi)&  BCo );
-            Ami =   BCi ^((!BCo)&  BCu );
-            Amo =   BCo ^((!BCu)&  BCa );
-            Amu =   BCu ^((!BCa)&  BCe );
+            eb_u ^= d_u;
+            bc_a = ROL!(eb_u, 27);
+            eg_a ^= d_a;
+            bc_e = ROL!(eg_a, 36);
+            ek_e ^= d_e;
+            bc_i = ROL!(ek_e, 10);
+            em_i ^= d_i;
+            bc_o = ROL!(em_i, 15);
+            es_o ^= d_o;
+            bc_u = ROL!(es_o, 56);
+            am_a =   bc_a ^((!bc_e)&  bc_i );
+            am_e =   bc_e ^((!bc_i)&  bc_o );
+            am_i =   bc_i ^((!bc_o)&  bc_u );
+            am_o =   bc_o ^((!bc_u)&  bc_a );
+            am_u =   bc_u ^((!bc_a)&  bc_e );
 
-            Ebi ^= Di;
-            BCa = ROL!(Ebi, 62);
-            Ego ^= Do;
-            BCe = ROL!(Ego, 55);
-            Eku ^= Du;
-            BCi = ROL!(Eku, 39);
-            Ema ^= Da;
-            BCo = ROL!(Ema, 41);
-            Ese ^= De;
-            BCu = ROL!(Ese, 2);
-            Asa =   BCa ^((!BCe)&  BCi );
-            Ase =   BCe ^((!BCi)&  BCo );
-            Asi =   BCi ^((!BCo)&  BCu );
-            Aso =   BCo ^((!BCu)&  BCa );
-            Asu =   BCu ^((!BCa)&  BCe );
+            eb_i ^= d_i;
+            bc_a = ROL!(eb_i, 62);
+            eg_o ^= d_o;
+            bc_e = ROL!(eg_o, 55);
+            ek_u ^= d_u;
+            bc_i = ROL!(ek_u, 39);
+            em_a ^= d_a;
+            bc_o = ROL!(em_a, 41);
+            es_e ^= d_e;
+            bc_u = ROL!(es_e, 2);
+            as_a =   bc_a ^((!bc_e)&  bc_i );
+            as_e =   bc_e ^((!bc_i)&  bc_o );
+            as_i =   bc_i ^((!bc_o)&  bc_u );
+            as_o =   bc_o ^((!bc_u)&  bc_a );
+            as_u =   bc_u ^((!bc_a)&  bc_e );
         }
 
         let mut new_state: Vec<u64> = vec![0; 25];
         //copyToState(state, A)
-        new_state[ 0] = Aba;
-        new_state[ 1] = Abe;
-        new_state[ 2] = Abi;
-        new_state[ 3] = Abo;
-        new_state[ 4] = Abu;
-        new_state[ 5] = Aga;
-        new_state[ 6] = Age;
-        new_state[ 7] = Agi;
-        new_state[ 8] = Ago;
-        new_state[ 9] = Agu;
-        new_state[10] = Aka;
-        new_state[11] = Ake;
-        new_state[12] = Aki;
-        new_state[13] = Ako;
-        new_state[14] = Aku;
-        new_state[15] = Ama;
-        new_state[16] = Ame;
-        new_state[17] = Ami;
-        new_state[18] = Amo;
-        new_state[19] = Amu;
-        new_state[20] = Asa;
-        new_state[21] = Ase;
-        new_state[22] = Asi;
-        new_state[23] = Aso;
-        new_state[24] = Asu;
+        new_state[ 0] = ab_a;
+        new_state[ 1] = ab_e;
+        new_state[ 2] = ab_i;
+        new_state[ 3] = ab_o;
+        new_state[ 4] = ab_u;
+        new_state[ 5] = ag_a;
+        new_state[ 6] = ag_e;
+        new_state[ 7] = ag_i;
+        new_state[ 8] = ag_o;
+        new_state[ 9] = ag_u;
+        new_state[10] = ak_a;
+        new_state[11] = ak_e;
+        new_state[12] = ak_i;
+        new_state[13] = ak_o;
+        new_state[14] = ak_u;
+        new_state[15] = am_a;
+        new_state[16] = am_e;
+        new_state[17] = am_i;
+        new_state[18] = am_o;
+        new_state[19] = am_u;
+        new_state[20] = as_a;
+        new_state[21] = as_e;
+        new_state[22] = as_i;
+        new_state[23] = as_o;
+        new_state[24] = as_u;
 
     return new_state;
 
@@ -369,7 +369,7 @@ fn keccak_absorb(rate: usize, m: &Vec<u8>, p: u8) -> Vec<u64>
             state[i] ^= load64(m, rate_offset + 8 * i);
         }
         
-        state = KeccakF1600_StatePermute(&state);
+        state = keccak_f1600_state_permute(&state);
         rate_offset += rate;
     }
 
@@ -403,7 +403,7 @@ fn keccak_squeezeblocks(num_blocks: usize, state: &Vec<u64>, rate: usize) ->
     
     for _ in 0..blocks
     {
-        new_state = KeccakF1600_StatePermute(&new_state);
+        new_state = keccak_f1600_state_permute(&new_state);
         for i in 0..rate_qwords
         {
             bytes.extend(store64(new_state[i]));
@@ -495,7 +495,7 @@ mod tests
             0x49A2EC5C7BFFF1EA,
         ];
 
-        s = KeccakF1600_StatePermute(&s);
+        s = keccak_f1600_state_permute(&s);
 
         for i in 0..s.len()
         {
@@ -615,7 +615,7 @@ mod tests
         }
 
         let s128_sq = shake128_squeezeblocks(1, 
-                                        &KeccakF1600_StatePermute(&state));
+                                        &keccak_f1600_state_permute(&state));
 
         for i in 0..s128_sq.state.len()
         {

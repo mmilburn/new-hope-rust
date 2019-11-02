@@ -1,5 +1,6 @@
-static NROUNDS: usize = 24;
-static SHAKE128_RATE: usize = 168;
+const NROUNDS: usize = 24;
+const SHAKE128_RATE: usize = 168;
+const SHAKE256_RATE: usize = 136;
 
 /* Keccak round constants */
 static KeccakF_RoundConstants: [u64; 24] = 
@@ -29,6 +30,11 @@ static KeccakF_RoundConstants: [u64; 24] =
     0x0000000080000001,
     0x8000000080008008
 ];
+
+struct Squeeze {
+    state: Vec<u64>,
+    result: Vec<u8>,
+}
 
 macro_rules! ROL
 {
@@ -65,7 +71,7 @@ fn store64(u: u64) -> Vec<u8>
 }
 
 
-fn KeccakF1600_StatePermute(state: &mut Vec<u64>)
+fn KeccakF1600_StatePermute(state: &Vec<u64>) -> Vec<u64>
 {
     
     let (mut Aba, mut Abe, mut Abi, mut Abo, mut Abu): 
@@ -314,39 +320,43 @@ fn KeccakF1600_StatePermute(state: &mut Vec<u64>)
             Asu =   BCu ^((!BCa)&  BCe );
         }
 
+        let mut new_state: Vec<u64> = vec![0; 25];
         //copyToState(state, A)
-        state[ 0] = Aba;
-        state[ 1] = Abe;
-        state[ 2] = Abi;
-        state[ 3] = Abo;
-        state[ 4] = Abu;
-        state[ 5] = Aga;
-        state[ 6] = Age;
-        state[ 7] = Agi;
-        state[ 8] = Ago;
-        state[ 9] = Agu;
-        state[10] = Aka;
-        state[11] = Ake;
-        state[12] = Aki;
-        state[13] = Ako;
-        state[14] = Aku;
-        state[15] = Ama;
-        state[16] = Ame;
-        state[17] = Ami;
-        state[18] = Amo;
-        state[19] = Amu;
-        state[20] = Asa;
-        state[21] = Ase;
-        state[22] = Asi;
-        state[23] = Aso;
-        state[24] = Asu;
+        new_state[ 0] = Aba;
+        new_state[ 1] = Abe;
+        new_state[ 2] = Abi;
+        new_state[ 3] = Abo;
+        new_state[ 4] = Abu;
+        new_state[ 5] = Aga;
+        new_state[ 6] = Age;
+        new_state[ 7] = Agi;
+        new_state[ 8] = Ago;
+        new_state[ 9] = Agu;
+        new_state[10] = Aka;
+        new_state[11] = Ake;
+        new_state[12] = Aki;
+        new_state[13] = Ako;
+        new_state[14] = Aku;
+        new_state[15] = Ama;
+        new_state[16] = Ame;
+        new_state[17] = Ami;
+        new_state[18] = Amo;
+        new_state[19] = Amu;
+        new_state[20] = Asa;
+        new_state[21] = Ase;
+        new_state[22] = Asi;
+        new_state[23] = Aso;
+        new_state[24] = Asu;
+
+    return new_state;
 
 }
 
-//This CANNOT handle messages that aren't byte divisble.
+//This CANNOT handle messages that aren't byte divisible.
 fn keccak_absorb(rate: usize, m: Vec<u8>, p: u8) -> Vec<u64>
 {
-    let rate_qwords = rate / 8;
+    //Divide by 2^3 (8)
+    let rate_qwords = rate >> 3;
     let mut state: Vec<u64> = vec![0; 25];
 
     let mut t: Vec<u8> = vec![0u8; rate];
@@ -358,8 +368,8 @@ fn keccak_absorb(rate: usize, m: Vec<u8>, p: u8) -> Vec<u64>
         {
             state[i] ^= load64(&m, rate_offset + 8 * i);
         }
-
-        KeccakF1600_StatePermute(&mut state);
+        
+        state = KeccakF1600_StatePermute(&state);
         rate_offset += rate;
     }
 
@@ -383,8 +393,34 @@ fn keccak_absorb(rate: usize, m: Vec<u8>, p: u8) -> Vec<u64>
     return state;
 }
 
-fn keccak_squeezeblocks()
-{}
+fn keccak_squeezeblocks(num_blocks: usize, state: &Vec<u64>, rate: usize) -> 
+    Squeeze
+{
+    let rate_qwords = rate >> 3;
+    let mut bytes: Vec<u8> = Vec::new();
+    let mut new_state: Vec<u64> = state.clone();
+    
+    for _ in 0..num_blocks
+    {
+        new_state = KeccakF1600_StatePermute(&new_state);
+        for i in 0..rate_qwords
+        {
+            bytes.extend(store64(new_state[i]));
+        }
+    }
+
+    return Squeeze { state: new_state, result: bytes };
+}
+
+fn shake128_absorb(msg: Vec<u8>) -> Vec<u64>
+{
+    return keccak_absorb(SHAKE128_RATE, msg, 0x1F);
+}
+
+fn shake128_squeezeblocks(num_blocks: usize, state: &Vec <u64>) -> Squeeze
+{
+    return keccak_squeezeblocks(num_blocks, state, SHAKE128_RATE);
+}
 
 #[cfg(test)]
 mod tests
@@ -441,7 +477,7 @@ mod tests
             0x49A2EC5C7BFFF1EA,
         ];
 
-        KeccakF1600_StatePermute(&mut s);
+        s = KeccakF1600_StatePermute(&s);
 
         for i in 0..s.len()
         {
@@ -453,7 +489,7 @@ mod tests
     }
 
     #[test]
-    fn test_keccak_absorb()
+    fn test_absorb_squeeze()
     {
         let msg: Vec<u8> = vec![
             0x83,0xAF,0x34,0x27,0x9C,0xCB,0x54,0x30,0xFE,0xBE,0xC0,0x7A,0x81,
@@ -506,7 +542,51 @@ mod tests
             0xDE924A3B2AC45E56,
         ];
 
-        let state = keccak_absorb(SHAKE128_RATE, msg, 0x1F);
+        let squeeze_result: Vec<u8> = vec![
+            0x85,0x19,0x10,0x84,0xEE,0x39,0xE8,0xFB,0x47,0x29,0x65,0xF5,0x1C,
+            0x6E,0x55,0x6C,0xF4,0xEA,0xE5,0x5C,0x54,0x0A,0xDC,0xED,0xEB,0x9E,
+            0x77,0x69,0x9C,0x16,0x1A,0x88,0xDD,0x07,0x09,0x32,0x51,0xDB,0xF4,
+            0x03,0xE7,0xA2,0x6E,0xA6,0xFF,0x93,0xB2,0xE5,0xC6,0x1E,0x5C,0x05,
+            0x38,0xCC,0x29,0xD6,0x9D,0xE8,0x06,0xD9,0x95,0xC9,0xBB,0x59,0xB5,
+            0x29,0x15,0xA6,0x1B,0x9D,0xAA,0xA3,0xB2,0x1F,0xC3,0x25,0xAE,0x7E,
+            0x1D,0x59,0x23,0xD7,0xE2,0xCD,0xB4,0xF7,0x1E,0x9C,0x1E,0x9D,0xEB,
+            0x33,0x19,0x16,0xF0,0x9B,0x22,0xA3,0x4C,0xA7,0x0F,0xD2,0x04,0x10,
+            0xEE,0xDB,0x22,0x11,0x8D,0x60,0x68,0x70,0x18,0x8B,0xBB,0x98,0x00,
+            0x44,0x5B,0x13,0x6F,0xFE,0xF3,0xD7,0x53,0x9B,0x71,0x04,0xEE,0xD3,
+            0x6E,0x3E,0x66,0x3B,0x51,0x67,0xA5,0x64,0x9B,0x0F,0xD2,0x01,0x34,
+            0x24,0x15,0x3B,0x92,0xBF,0x52,0x08,0x45,0x97,0x2C,0x14,0x6F,0x8E,
+            0x15,0x67,0x0B,0xE4,0x0C,0xF2,0xEF,0x1E,0x73,0xE2,0x3E,0x40,
+        ];
+
+        let squeeze_state: Vec<u64> = vec![
+            0x85191084EE39E8FB,
+            0x472965F51C6E556C,
+            0xF4EAE55C540ADCED,
+            0xEB9E77699C161A88,
+            0xDD07093251DBF403,
+            0xE7A26EA6FF93B2E5,
+            0xC61E5C0538CC29D6,
+            0x9DE806D995C9BB59,
+            0xB52915A61B9DAAA3,
+            0xB21FC325AE7E1D59,
+            0x23D7E2CDB4F71E9C,
+            0x1E9DEB331916F09B,
+            0x22A34CA70FD20410,
+            0xEEDB22118D606870,
+            0x188BBB9800445B13,
+            0x6FFEF3D7539B7104,
+            0xEED36E3E663B5167,
+            0xA5649B0FD2013424,
+            0x153B92BF52084597,
+            0x2C146F8E15670BE4,
+            0x0CF2EF1E73E23E40,
+            0x631CF1942C04317E,
+            0x6E0753D5535C51F6,
+            0x3B883B0380DFE90F,
+            0x28563789E8C49F7A,
+        ];
+
+        let state = shake128_absorb(msg);
         
         for i in 0..state.len()
         {
@@ -514,6 +594,28 @@ mod tests
             let e = u64::from_be(final_state[i]);
             assert_eq!(f == e, true, 
                        "s[{}] = 0x{:X?} final_state[{}] = 0x{:X?}", i, f, i, e);
+        }
+
+        let s128_sq = shake128_squeezeblocks(1, 
+                                        &KeccakF1600_StatePermute(&state));
+
+        for i in 0..s128_sq.state.len()
+        {
+            let f = s128_sq.state[i];
+            let e = u64::from_be(squeeze_state[i]);
+            assert_eq!(f == e, true, 
+                       "s[{}] = 0x{:X?} squeeze_state[{}] = 0x{:X?}",
+                       i, f, i, e);
+
+        }
+
+        for i in 0..s128_sq.result.len()
+        {
+            let f = s128_sq.result[i];
+            let e = squeeze_result[i];
+            assert_eq!(f == e, true, 
+                       "r[{}] = 0x{:X?} squeeze_result[{}] = 0x{:X?}", 
+                       i, f, e, i);
         }
     }
 

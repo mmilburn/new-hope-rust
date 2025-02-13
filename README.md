@@ -15,5 +15,5 @@ I felt that having tests in place as I developed components was the only way
 to ensure I could make forward progress (and I still believe this). At the
 time I struggled with developing effective tests for unfamiliar concepts (e.g.
 Number Theoretic Transforms, Montgomery Multiplication, Keccak). At a certain
-point, I got stuck. While I now feel better I have a much better chance of
-finishing this implementation, I have yet to return to it.
+point, I got stuck. While I now feel I have a much better chance of
+completing this implementation, I have yet to return to it.
